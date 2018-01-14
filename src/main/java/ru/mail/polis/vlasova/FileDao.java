@@ -22,8 +22,9 @@ public class FileDao implements DAO {
     @Override
     public byte[] get(@NotNull String key) throws NoSuchElementException, IllegalArgumentException, IOException {
         File file = getFile(key);
-        byte[] value = new byte[(int) file.length()];
+        byte[] value = null;
         try (FileInputStream fis = new FileInputStream(file)) {
+            value = new byte[(int) file.length()];
             fis.read(value, 0, fis.available());
         } catch (FileNotFoundException e) {
             throw new NoSuchElementException();
