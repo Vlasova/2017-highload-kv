@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ru.mail.polis.KVService;
 
 import java.io.ByteArrayOutputStream;
@@ -112,7 +113,7 @@ public class Service implements KVService {
     }
 
     @NotNull
-    private HttpHandler createEntityHandler() throws IOException{
+    private HttpHandler createEntityHandler() throws IOException {
         return http -> {
             try {
                 final String query = http.getRequestURI().getQuery();
@@ -142,7 +143,7 @@ public class Service implements KVService {
         };
     }
 
-    private void handleEntityGet(HttpExchange http, String id, int ack, int from)
+    private void handleEntityGet(@NotNull HttpExchange http, @NotNull String id, int ack, int from)
             throws IOException, IllegalArgumentException {
         int ok = 0;
         int not_found = 0;
@@ -175,14 +176,21 @@ public class Service implements KVService {
             } catch (Exception e) {
                 continue;
             }
-            if (code == OK && data != null) {
+            if (code == OK) {
                 ok++;
             }
+            if (code == NOT_FOUND) {
+                not_found++;
+            }
+        }
+        if (ok > 0 && not_found == 1 && !checkGet(id)) {
+            ok++;
+            not_found--;
         }
         if (ok + not_found < ack) {
             sendResponse(http, NOT_ENOUGH_REPLICAS);
         }
-        else if (ok == 0) {
+        else if (ok < ack) {
             sendResponse(http, NOT_FOUND);
         }
         else {
@@ -190,7 +198,8 @@ public class Service implements KVService {
         }
     }
 
-    private byte[] readInputStreamData(InputStream is) throws IOException {
+    @NotNull
+    private byte[] readInputStreamData(@NotNull InputStream is) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] data = new byte[1024];
         int count;
@@ -200,7 +209,7 @@ public class Service implements KVService {
         return data;
     }
 
-    private void handleEntityDelete(HttpExchange http, String id, int ack, int from)
+    private void handleEntityDelete(@NotNull HttpExchange http, @NotNull String id, int ack, int from)
             throws IOException, IllegalArgumentException {
         int ok = 0;
         for (String node : getNodes(id, from)) {
@@ -236,8 +245,8 @@ public class Service implements KVService {
         }
     }
 
-    private void handleEntityPut(HttpExchange http, String id, int ack, int from, byte[] value)
-            throws IOException, IllegalArgumentException {
+    private void handleEntityPut(@NotNull HttpExchange http, @NotNull String id, int ack, int from,
+                                 @NotNull byte[] value) throws IOException, IllegalArgumentException {
         int ok = 0;
         for (String node : getNodes(id, from)) {
             if (node.equals("http://localhost:" + port)) {
@@ -256,7 +265,7 @@ public class Service implements KVService {
         else sendResponse(http, NOT_ENOUGH_REPLICAS);
     }
 
-    private int getPutResponse(@NotNull String addr, byte[] data) {
+    private int getPutResponse(@NotNull String addr, @NotNull byte[] data) {
         try {
             URL url = new URL(addr);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -301,7 +310,8 @@ public class Service implements KVService {
         return Integer.valueOf(from.split("/")[1]);
     }
 
-    private String parseReplicas(@NotNull String query) throws IllegalArgumentException{
+    @Nullable
+    private String parseReplicas(@NotNull String query) throws IllegalArgumentException {
         Map<String, String> params = queryToMap(query);
         if (params.isEmpty()) {
             throw new IllegalArgumentException();
@@ -309,9 +319,8 @@ public class Service implements KVService {
         return params.get("replicas");
     }
 
-
     @NotNull
-    private Map<String, String> queryToMap(@NotNull final String query) throws IllegalArgumentException{
+    private Map<String, String> queryToMap(@NotNull final String query) throws IllegalArgumentException {
         Map<String, String> result = new HashMap<>();
         for (String param : query.split("&")) {
             String[] pair = param.split("=");
@@ -323,7 +332,8 @@ public class Service implements KVService {
         return result;
     }
 
-    private byte[] readPutValue(HttpExchange http) throws IOException, IllegalArgumentException {
+    @NotNull
+    private byte[] readPutValue(@NotNull HttpExchange http) throws IOException, IllegalArgumentException {
         Headers headers = http.getRequestHeaders();
         if (headers == null) {
             throw  new IllegalArgumentException();
@@ -343,6 +353,15 @@ public class Service implements KVService {
             nodes.add(topology.get(index));
         }
         return nodes;
+    }
+
+    private boolean checkGet(@NotNull String id) {
+        try {
+            dao.get(id);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
 
