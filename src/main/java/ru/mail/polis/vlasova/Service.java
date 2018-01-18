@@ -209,12 +209,13 @@ public class Service implements KVService {
         return data;
     }
 
-    private void handleEntityDelete(@NotNull HttpExchange http, @NotNull String id, int ack, int from)
-            throws IOException, IllegalArgumentException {
+    private void handleEntityDelete(@NotNull HttpExchange http, @NotNull String id, int ack, int from) throws IOException {
         int ok = 0;
         for (String node : getNodes(id, from)) {
             if (node.equals("http://localhost:" + port)) {
-                dao.delete(id);
+                try {
+                    dao.delete(id);
+                } catch (IOException e) {}
                 ok++;
                 continue;
             }
@@ -246,12 +247,14 @@ public class Service implements KVService {
     }
 
     private void handleEntityPut(@NotNull HttpExchange http, @NotNull String id, int ack, int from,
-                                 @NotNull byte[] value) throws IOException, IllegalArgumentException {
+                                 @NotNull byte[] value) throws IOException {
         int ok = 0;
         for (String node : getNodes(id, from)) {
             if (node.equals("http://localhost:" + port)) {
-                dao.upsert(id, value);
-                ok++;
+                try {
+                    dao.upsert(id, value);
+                    ok++;
+                } catch (IOException e) {}
                 continue;
             }
             String url = node + INNER_PATH + "?id=" + id;

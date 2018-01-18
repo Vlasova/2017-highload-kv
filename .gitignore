@@ -12,6 +12,8 @@
 !LICENSE
 !README.md
 !settings.gradle
+!LOADTEST.md
+!*.sh
 
 # ...even if they are in subdirectories
 !*/
