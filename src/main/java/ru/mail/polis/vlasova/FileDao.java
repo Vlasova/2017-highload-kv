@@ -25,25 +25,34 @@ public class FileDao implements DAO {
     @NotNull
     @Override
     public byte[] get(@NotNull String key) throws NoSuchElementException, IOException {
-        Path path = Paths.get(dir, key);
-        if (!Files.exists(path)) {
-            throw new NoSuchElementException();
+        byte[] value = cache.get(key);
+        if (!cache.containsKey(key)) {
+            Path path = Paths.get(dir, key);
+            if (!Files.exists(path)) {
+                throw new NoSuchElementException();
+            }
+            value = Files.readAllBytes(path);
+            if (cache.size() == CACHE_SIZE) {
+                cache.remove(cache.keySet().iterator().next());
+            }
+            cache.put(key, value);
         }
-        byte[] value = Files.readAllBytes(path);
-        if (cache.size() == CACHE_SIZE) {
-            cache.remove(cache.keySet().iterator().next());
-        }
-        cache.put(key, value);
         return value;
     }
 
     @Override
     public void upsert(@NotNull String key, @NotNull byte[] value) throws IOException {
         Files.write(Paths.get(dir, key), value);
+        if (cache.containsKey(key)) {
+            cache.put(key, value);
+        }
     }
 
     @Override
     public void delete(@NotNull String key) throws IOException {
         Files.delete(Paths.get(dir, key));
+        if (cache.containsKey(key)) {
+            cache.remove(key);
+        }
     }
 }

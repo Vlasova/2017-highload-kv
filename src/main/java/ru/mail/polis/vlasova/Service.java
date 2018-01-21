@@ -206,7 +206,7 @@ public class Service implements KVService {
         while ((count = is.read(data)) != -1) {
             baos.write(data, 0, count);
         }
-        return data;
+        return baos.toByteArray();
     }
 
     private void handleEntityDelete(@NotNull HttpExchange http, @NotNull String id, int ack, int from) throws IOException {
@@ -341,10 +341,7 @@ public class Service implements KVService {
         if (headers == null) {
             throw  new IllegalArgumentException();
         }
-        int length = Integer.valueOf(headers.getFirst("Content-Length"));
-        final byte[] putValue = new byte[length];
-        http.getRequestBody().read(putValue);
-        return putValue;
+        return readInputStreamData(http.getRequestBody());
     }
 
     @NotNull
