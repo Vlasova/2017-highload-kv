@@ -58,48 +58,48 @@ Requests/sec: 34.1
 GET без повторов, replicas=2/3
 ```
 $ ./get1.sh 3000 2 3
-Average delay: 23.076 ms
-Requests/sec: 43.3
+Average delay: 25.716 ms
+Requests/sec: 38.8
 ```
 GET без повторов, replicas=3/3
 ```
 $ ./get1.sh 3000 3 3
-Average delay: 23.759 ms
-Requests/sec: 42.0
+Average delay: 24.644 ms
+Requests/sec: 40.5
 ```
 GET с повторами, replicas=2/3
 ```
 $ ./get2.sh 3000 2 3
-Average delay: 23.957 ms
-Requests/sec: 41.7
+Average delay: 22.840 ms
+Requests/sec: 43.7
 ```
 GET с повторами, replicas=3/3
 ```
 $ ./get2.sh 3000 3 3
-Average delay: 23.739 ms
-Requests/sec: 42.1
+Average delay: 22.757 ms
+Requests/sec: 43.9
 ```
 PUT без перезаписи, replicas=2/3
 ```
 $ ./put1.sh 3000 2 3
-Average delay: 27.552 ms
-Requests/sec: 36.2
+Average delay: 27.980 ms
+Requests/sec: 35.7
 ```
 PUT без перезаписи, replicas=3/3
 ```
 $ ./put1.sh 3000 3 3
-Average delay: 25.097 ms
-Requests/sec: 39.8
+Average delay: 27.778 ms
+Requests/sec: 35.9
 ```
 PUT с перезаписью, replicas=2/3
 ```
 $ ./put2.sh 3000 2 3
-Average delay: 25.861 ms
-Requests/sec: 38.6
+Average delay: 26.588 ms
+Requests/sec: 37.6
 ```
 PUT с перезаписью, replicas=3/3
 ```
 $ ./put2.sh 3000 3 3
-Average delay: 25.020 ms
-Requests/sec: 39.9
+Average delay: 24.958 ms
+Requests/sec: 40.0
 ```
