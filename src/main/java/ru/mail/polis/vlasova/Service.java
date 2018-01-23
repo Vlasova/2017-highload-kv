@@ -184,6 +184,7 @@ public class Service implements KVService {
             }
         }
         if (ok > 0 && not_found == 1 && !checkGet(id)) {
+            dao.upsert(id, data);
             ok++;
             not_found--;
         }
@@ -233,7 +234,7 @@ public class Service implements KVService {
     }
 
     private int getDeleteResponse(@NotNull String addr) {
-        try{
+        try {
             URL url = new URL(addr);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("DELETE");
@@ -339,7 +340,7 @@ public class Service implements KVService {
     private byte[] readPutValue(@NotNull HttpExchange http) throws IOException, IllegalArgumentException {
         Headers headers = http.getRequestHeaders();
         if (headers == null) {
-            throw  new IllegalArgumentException();
+            throw new IllegalArgumentException();
         }
         return readInputStreamData(http.getRequestBody());
     }

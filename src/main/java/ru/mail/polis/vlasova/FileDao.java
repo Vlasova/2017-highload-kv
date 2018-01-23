@@ -26,7 +26,7 @@ public class FileDao implements DAO {
     @Override
     public byte[] get(@NotNull String key) throws NoSuchElementException, IOException {
         byte[] value = cache.get(key);
-        if (!cache.containsKey(key)) {
+        if (value == null) {
             Path path = Paths.get(dir, key);
             if (!Files.exists(path)) {
                 throw new NoSuchElementException();
@@ -51,8 +51,6 @@ public class FileDao implements DAO {
     @Override
     public void delete(@NotNull String key) throws IOException {
         Files.delete(Paths.get(dir, key));
-        if (cache.containsKey(key)) {
-            cache.remove(key);
-        }
+        cache.remove(key);
     }
 }
